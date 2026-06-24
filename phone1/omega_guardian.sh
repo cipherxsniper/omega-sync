@@ -5,7 +5,7 @@
 OMEGA_HOME="/data/data/com.termux/files/home"
 LOGS="$OMEGA_HOME/omega_runtime/logs"
 SSH_KEY="$OMEGA_HOME/.ssh/omega_bridge"
-PHONE2="192.168.11.2"
+PHONE2="192.168.11.163"
 _GUARDIAN_CYCLES=0
 
 mkdir -p "$LOGS"
@@ -82,8 +82,10 @@ while true; do
     if [ $((_GUARDIAN_CYCLES % 10)) -eq 0 ]; then
         python3 "$OMEGA_HOME/omega_oracle_v2.py" \
           >> "$LOGS/oracle.log" 2>&1 &
+        bash "$OMEGA_HOME/omega_build_watcher.sh" >> "$LOGS/build_watcher.log" 2>&1 &
     fi
 
+    bash "$OMEGA_HOME/omega_update_api_url.sh" >> "$LOGS/api_url_update.log" 2>&1
     sleep 30
 done
 
