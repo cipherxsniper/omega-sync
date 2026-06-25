@@ -4,8 +4,8 @@ import psycopg2
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
-PG_CONN = "dbname=omega_bank user=postgres host=127.0.0.1 port=5432"
-PG_LEDGER = "dbname=omega_ledger user=postgres host=127.0.0.1 port=5432"
+PG_CONN = "dbname=omega_bank user=u0_a321 host=/data/data/com.termux/files/usr/tmp"
+PG_LEDGER = "dbname=omega_ledger user=u0_a321 host=127.0.0.1 port=5432"
 
 NFT_WALLET_MAP = {
     "2109a4cc-a066-4698-a478-a786bf096318": "Thomas Lee Harvey — Founder",
@@ -29,7 +29,7 @@ class Handler(BaseHTTPRequestHandler):
         
         try:
             if path == "/health":
-                self.json_response({"status": "online", "collections": 4})
+                self.json_response({"status": "online", "collections": 5})
             elif path.startswith("/collection/"):
                 slug = path.split("/")[-1]
                 self.json_response(self.get_collection(slug))
@@ -78,7 +78,10 @@ class Handler(BaseHTTPRequestHandler):
             "echoes": "Echoes of Eternity",
             "somnium": "Somnium",
             "paracosm": "Paracosm",
-            "monolith": "Monolith"
+            "monolith": "Monolith",
+            "lebal": "Le Bal des Rêves",
+            "le-bal": "Le Bal des Rêves",
+            "bal": "Le Bal des Rêves",
         }
         col_name = col_map.get(slug, slug)
         try:
@@ -145,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
     def get_nft_verify(self, collection, token_id):
         conn = psycopg2.connect(PG_LEDGER)
         cur = conn.cursor()
-        col_map = {"echoes": "Echoes of Eternity", "somnium": "Somnium", "paracosm": "Paracosm", "monolith": "Monolith"}
+        col_map = {"echoes": "Echoes of Eternity", "somnium": "Somnium", "paracosm": "Paracosm", "monolith": "Monolith", "lebal": "Le Bal des Rêves", "le-bal": "Le Bal des Rêves", "bal": "Le Bal des Rêves"}
         col_name = col_map.get(collection, collection)
         cur.execute("SELECT token_id, name, title, rarity, om109_fingerprint, chain_hash FROM nft_registry WHERE collection = %s AND token_id = %s", (col_name, int(token_id) if token_id.isdigit() else -1))
         result = cur.fetchone()

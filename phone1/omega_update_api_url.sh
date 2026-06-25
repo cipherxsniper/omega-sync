@@ -1,8 +1,8 @@
 #!/bin/bash
-LOG_URL=$(grep -o 'https://[a-zA-Z0-9.-]*trycloudflare.com' ~/omega_runtime/logs/api_tunnel.log | tail -1)
+LOG_URL=$(grep -o 'https://[a-zA-Z0-9.-]*trycloudflare.com' ~/omega_runtime/logs/cloudflared_api.log | tail -1)
 
 if [ -z "$LOG_URL" ]; then
-  echo "$(date -u) No URL found in api_tunnel.log — skipping"
+  echo "$(date -u) No URL found in cloudflared_api.log — skipping"
   exit 1
 fi
 

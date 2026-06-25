@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omega Art Studio — Gallery</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#07100d;color:#F0E6D3;font-family:'Space Grotesk',sans-serif;min-height:100vh;}
 header{padding:20px;text-align:center;border-bottom:1px solid #2a1f15;}
@@ -105,10 +105,206 @@ h1{font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:3px;colo
 .exp-tab.active{border-color:#C9A84C;color:#C9A84C;}
 .exp-content{display:none;}
 .exp-content.active{display:block;}
+
+/* ── INVITATION OVERLAY ─────────────────────────────── */
+#invite-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at center, #1a0e05 0%, #0a0602 100%);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .8s ease;
+}
+#invite-overlay.fade-out{opacity:0;pointer-events:none;}
+#invite-overlay.gone{display:none;}
+
+.invite-envelope{
+  position:relative;width:320px;cursor:pointer;
+  animation:floatEnv 3s ease-in-out infinite;
+}
+@keyframes floatEnv{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+.invite-envelope-body{
+  width:320px;height:200px;
+  background:linear-gradient(135deg,#1a0e05 0%,#2a1a08 50%,#1a0e05 100%);
+  border:1px solid #8B5E2A;
+  border-radius:4px;
+  position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.8), inset 0 1px 0 rgba(201,168,76,.2);
+}
+.invite-envelope-flap{
+  position:absolute;top:0;left:0;width:100%;
+  border-left:160px solid transparent;
+  border-right:160px solid transparent;
+  border-top:100px solid #1a1005;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  transform-origin:top center;
+  transition:transform .6s ease;
+}
+.invite-envelope.open .invite-envelope-flap{
+  transform:rotateX(180deg);
+}
+.invite-wax{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:64px;height:64px;
+  background:radial-gradient(circle,#8B0000 0%,#5a0000 60%,#3a0000 100%);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(139,0,0,.6);
+  font-size:24px;color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  transition:transform .3s, box-shadow .3s;
+}
+.invite-envelope:hover .invite-wax{
+  transform:translate(-50%,-50%) scale(1.1);
+  box-shadow:0 6px 24px rgba(139,0,0,.8);
+}
+.invite-hint{
+  text-align:center;margin-top:20px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:16px;
+  color:#8B7355;letter-spacing:1px;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* ── LETTER PANEL ───────────────────────────────────── */
+#invite-letter{
+  display:none;
+  max-width:400px;width:90%;
+  background:linear-gradient(160deg,#1a1208 0%,#0f0c06 100%);
+  border:1px solid #8B5E2A;
+  padding:36px 32px;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.9);
+  animation:letterRise .5s ease;
+}
+@keyframes letterRise{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.letter-omega{
+  text-align:center;font-size:48px;color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  margin-bottom:16px;
+  text-shadow:0 0 30px rgba(201,168,76,.4);
+}
+.letter-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-style:italic;
+  color:#F0E6D3;text-align:center;
+  margin-bottom:8px;letter-spacing:1px;
+}
+.letter-subtitle{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;color:#8B7355;
+  text-align:center;margin-bottom:28px;
+  font-style:italic;
+}
+.letter-divider{
+  border:none;border-top:1px solid #2a1f15;margin:20px 0;
+}
+.letter-body{
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px;color:#d4c9b8;
+  line-height:1.8;text-align:center;
+  margin-bottom:28px;font-style:italic;
+}
+.invite-paths{
+  display:flex;flex-direction:column;gap:10px;
+}
+.invite-path{
+  padding:12px 20px;
+  background:rgba(201,168,76,.05);
+  border:1px solid #2a1f15;
+  color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+}
+.invite-path:hover{
+  background:rgba(201,168,76,.12);
+  border-color:#C9A84C;
+  transform:translateX(4px);
+}
+.letter-sig{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;color:#8B7355;
+  text-align:center;margin-top:24px;
+  font-style:italic;
+}
+
 </style>
 </style>
 </head>
 <body>
+
+<!-- ── INVITATION OVERLAY ──────────────────────────── -->
+<div id="invite-overlay">
+  <div style="display:flex;flex-direction:column;align-items:center;">
+
+    <!-- Envelope (shown first) -->
+    <div id="invite-envelope-wrap">
+      <div class="invite-envelope" id="invite-env" onclick="openEnvelope()">
+        <div class="invite-envelope-body">
+          <div class="invite-envelope-flap" id="env-flap"></div>
+          <div class="invite-wax">Ω</div>
+        </div>
+      </div>
+      <div class="invite-hint">Tap to open your invitation</div>
+    </div>
+
+    <!-- Letter (shown after tap) -->
+    <div id="invite-letter">
+      <div class="letter-omega">Ω</div>
+      <div class="letter-title">You Are Cordially Invited</div>
+      <div class="letter-subtitle">to the Omega Art Studio</div>
+      <hr class="letter-divider">
+      <div class="letter-body">
+        Where cryptography meets surrealism.<br>
+        Where every token is a permanent truth<br>
+        inscribed on an immutable ledger.<br><br>
+        Choose your path.
+      </div>
+      <div class="invite-paths">
+        <div class="invite-path" onclick="enterPath('gallery')">
+          ✦ &nbsp; Omega Art Studio &nbsp; ✦
+        </div>
+        <div class="invite-path" onclick="enterPath('explorer')">
+          ✦ &nbsp; Omega Ledger &nbsp; ✦
+        </div>
+        <div class="invite-path" onclick="enterPath('about')">
+          ✦ &nbsp; About Omega &nbsp; ✦
+        </div>
+      </div>
+      <div class="letter-sig">
+        — Thomas Lee Harvey, Founder
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openEnvelope() {
+  document.getElementById('env-flap').style.transform = 'rotateX(180deg)';
+  setTimeout(function() {
+    document.getElementById('invite-envelope-wrap').style.display = 'none';
+    document.getElementById('invite-letter').style.display = 'block';
+  }, 600);
+}
+
+function enterPath(tab) {
+  var overlay = document.getElementById('invite-overlay');
+  overlay.classList.add('fade-out');
+  setTimeout(function() {
+    overlay.classList.add('gone');
+    showTab(tab);
+  }, 800);
+}
+</script>
+
 <header>
   <h1>OMEGA ART STUDIO</h1>
   <div class="status" id="status">Loading...</div>
@@ -127,18 +323,21 @@ h1{font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:3px;colo
   <div class="about-section">
     <div class="about-h1">The Story</div>
     <div class="about-p">
+      There is a game being played. You may not have noticed it yet. Thomas Lee Harvey has been leaving messages inside the art — not signatures, not watermarks, but intentions. Symbols that recur across collections. Figures that face the wrong direction. Costumes that should not exist. Each collection is a move in a game that has no published rules, only clues. Surrealism was always a game. Dalí knew it. Magritte knew it. The pipe was never a pipe. The melting clock was never about time.
+    </div>
+    <div class="about-p">
       Omega was built by one person. No laptop. No team. No external funding. No cloud provider. Two Android phones, a terminal emulator, and an architecture that most funded engineering teams have never attempted. What exists today is a complete distributed financial operating system, a cryptographic art authentication layer, a live NFT marketplace, and a virtual card issuance system — all running on hardware that fits in two pockets.
     </div>
     <div class="about-p">
-      That is not a metaphor or a marketing line. The database is PostgreSQL 18.2 running on a physical Android phone, accessed over SSH from a second phone acting as the control plane. The consensus engine enforces Byzantine fault-tolerant approval across two physical nodes — the same algorithm that protects distributed systems at scale, running on consumer hardware at 1 AM. The ledger has recorded over <strong>2,020,075 immutable entries</strong>. Its own trigger has blocked its creator from deleting a single row. The system protects itself from everyone — including Thomas.
+      That is not a metaphor or a marketing line. The database is PostgreSQL 18.2 running on a physical Android phone, accessed over SSH from a second phone acting as the control plane. The consensus engine enforces Byzantine fault-tolerant approval across two physical nodes. The ledger has recorded over <strong>2,020,075 immutable entries</strong>. Its own trigger has blocked its creator from deleting a single row. The system protects itself from everyone — including Thomas.
     </div>
     <div class="about-p">
-      This was built in sessions. Late nights. One patch at a time. Every component self-grades through a 17-part Oracle that cannot regress. Every line of code was verified before deployment. Every number in this system is real — pulled from the database, not written into a document.
+      This was built in sessions. Late nights. One patch at a time. Every component self-grades through a 17-part Oracle that cannot regress. Every number in this system is real — pulled from the database, not written into a document.
     </div>
     <div class="about-quote">"I didn't build a portfolio project. I built infrastructure. The ledger doesn't care who created it — it blocks everyone equally."<br>— Thomas Lee Harvey</div>
     <div class="stat-row">
       <div class="stat-box"><span class="stat-num">2M+</span><span class="stat-label">Ledger Entries</span></div>
-      <div class="stat-box"><span class="stat-num">400</span><span class="stat-label">Authenticated NFTs</span></div>
+      <div class="stat-box"><span class="stat-num">500</span><span class="stat-label">Authenticated NFTs</span></div>
       <div class="stat-box"><span class="stat-num">125</span><span class="stat-label">Database Tables</span></div>
       <div class="stat-box"><span class="stat-num">2</span><span class="stat-label">Android Phones</span></div>
     </div>
@@ -158,14 +357,11 @@ h1{font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:3px;colo
     <div class="about-p">
       The ledger uses 7-layer double-entry accounting with SHA-256 hash chaining. Every entry references the hash of the entry before it. Tampering with any record breaks every record after it. The chain is the proof. There is no admin override. There is no rollback. The immutability trigger has blocked its own creator.
     </div>
-    <div class="about-p">
-      Virtual card issuance is stress-tested and live: Luhn-valid PANs, AES-256 encrypted storage, HMAC-SHA256 CVV generation, full lifecycle hash-chained — issue, authorize, freeze, unfreeze, audit. Every card event is a ledger entry. Every ledger entry is permanent.
-    </div>
     <div class="about-mono">
 omega_bank     → 125 tables · PostgreSQL 18.2 · Phone 2 (ARM64)
 omega_ledger   → 39 tables  · NFT registry · provenance · COAs
 entries        → 2,020,075+ · immutable · SHA-256 hash-chained
-consensus      → Byzantine fault-tolerant · 2-node quorum · ≥$500
+consensus      → Byzantine fault-tolerant · 2-node quorum
 ISO 20022      → pain.001 XML · auto-generated on every INSERT
     </div>
   </div>
@@ -173,7 +369,7 @@ ISO 20022      → pain.001 XML · auto-generated on every INSERT
   <div class="about-section">
     <div class="about-h1">OM109 — A Cryptographic Primitive Built From Scratch</div>
     <div class="about-p">
-      OM109 is Thomas Lee Harvey's original dual-key alternating signature algorithm. It was invented specifically for Omega — not adopted from an existing standard, not a wrapper around an existing library. It signs every financial transaction and every piece of art using the same primitive, creating a single cryptographic thread that runs through the entire system.
+      OM109 is Thomas Lee Harvey's original dual-key alternating signature algorithm — named after his birthday, October 9th. It was invented specifically for Omega. Not adopted. Not wrapped. Invented. It signs every financial transaction and every piece of art using the same primitive, creating a single cryptographic thread that runs through the entire system.
     </div>
     <div class="about-mono">
 genesis     = SHA256(GENESIS_SEED)
@@ -182,10 +378,7 @@ sig_b       = SHA256(genesis + ":B:" + token_id + ":" + image_hash + ":" + sig_a
 fingerprint = SHA256(sig_a[:32] + sig_b[:32])
     </div>
     <div class="about-p">
-      The genesis seed is collection-specific and permanent. The image hash is derived from the actual PNG file. The fingerprint is deterministic — given the same inputs, it always produces the same output. Given different inputs, it produces a completely different output. Zero collisions across all 400 tokens across all four collections.
-    </div>
-    <div class="about-p">
-      When you buy an Omega NFT, the OM109 fingerprint of your token is written into the financial ledger at the moment of purchase. The art provenance and the payment record share the same cryptographic root. <strong>The art and the money are the same ledger entry.</strong>
+      Zero collisions across all 400 tokens across all four collections. When you buy an Omega NFT, the OM109 fingerprint of your token is written into the financial ledger at the moment of purchase. The art provenance and the payment record share the same cryptographic root. <strong>The art and the money are the same ledger entry.</strong>
     </div>
     <div class="about-quote">"The same primitive that secures a dollar transfer secures a piece of art. That is not a coincidence. That is architecture."</div>
   </div>
@@ -193,13 +386,19 @@ fingerprint = SHA256(sig_a[:32] + sig_b[:32])
   <div class="about-section">
     <div class="about-h1">The Art — Hyper-Surrealism</div>
     <div class="about-p">
-      The four collections — <strong>Echoes of Eternity, Somnium, Paracosm, Monolith</strong> — are not generative noise. They are a defined aesthetic movement: Hyper-Surrealism. Where classical Surrealism reached for the unconscious through paint and canvas, Hyper-Surrealism reaches for it through neural computation — latent space as dreamscape, diffusion as vision, the model's hallucination as the artist's intention made visible.
+      The four collections — <strong>Echoes of Eternity, Somnium, Paracosm, Monolith</strong> — are not generative noise. They are a defined aesthetic movement: Hyper-Surrealism. Where classical Surrealism reached for the unconscious through paint and canvas — where Dalí dripped clocks and Magritte hid faces behind fruit — Hyper-Surrealism reaches for it through neural computation. Latent space as dreamscape. Diffusion as vision. The model's hallucination as the artist's intention made visible.
+    </div>
+    <div class="about-p">
+      Thomas does not describe what he wants the model to produce. He describes what cannot exist — and then makes it exist. Clouds that are also faces. Gold that is also grief. A figure that is simultaneously costume and identity, mask and self. Every piece is a subliminal transmission. The symbols recur. The geometry repeats. If you have looked at more than one collection, you have already received messages you have not yet decoded.
+    </div>
+    <div class="about-p">
+      This is a surrealist game of Clue — but the weapon is a fingerprint, the room is a ledger, and the suspect is whoever holds the token. Every collection is a chapter. Every rarity tier is a clue. The Impossible Diamond is not a reward for spending more. It is an invitation to look closer.
     </div>
     <div class="about-p">
       Every image was generated on ARM64 hardware using Stable Diffusion, with rarity seeded deterministically. The rarity is not assigned after the fact. It is computed from the token ID at mint time and cannot be changed. An Impossible Diamond was always going to be an Impossible Diamond.
     </div>
     <div class="about-p">
-      Thomas personally holds one Impossible Diamond in every collection. Not as a collector. As a founder. The tokens he holds are the anchor of the provenance chain — the first four entries in the registry, one per collection, permanently founder-linked.
+      Thomas personally holds one Impossible Diamond in every collection. Not as a collector. As a founder. The first four entries in the registry — one per collection — permanently founder-linked, permanently immutable.
     </div>
     <div class="about-mono">
 Echoes of Eternity  · #0085 "Stasis"    · Thomas Diamond
@@ -207,21 +406,44 @@ Somnium             · #0017 "Aloft"     · Thomas Diamond
 Paracosm            · #1002 "Obelisk"   · Thomas Diamond
 Monolith            · #2005 "Founder"   · Thomas Diamond
     </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">Bal de Rêves — The Next Collection</div>
     <div class="about-p">
-      400 tokens. 52 founder-held. 348 available. Each one with a Certificate of Authenticity, an OM109 fingerprint, a SHA-256 image hash, and an immutable ledger entry. When you buy, the chain records it permanently. When you verify, the chain shows you everything.
+      In 1972, the Rothschild family hosted a masquerade ball at Château de Ferrières. Dalí attended. The costumes were impossible — antlered headdresses cast in gold, birdcages worn as crowns, a man with an apple for a face. It was not a party. It was a séance. It was Surrealism in formal wear, sitting down to dinner and refusing to leave.
     </div>
+    <div class="about-p">
+      The next Omega collection is <strong>Bal de Rêves — The Ball of Dreams</strong>. Each NFT is a character. Each character wears a costume that should not exist. The collection is structured like a deck of graded trading cards — because every piece deserves to be handled like one.
+    </div>
+    <div class="about-p">
+      Rarity is visible at the edge. <strong>Impossible Diamond</strong> cards carry a double hairline rule in diamond-grade finish — ultra rare, unmistakable. <strong>Ultra Rare</strong> cards have a gold border. <strong>Rare</strong> cards carry silver. <strong>Bronze</strong> gets a warm metallic edge. <strong>Common</strong> cards have no border — but every card in the deck is graded, weighted, and feels like it was pulled from a vault.
+    </div>
+    <div class="about-p">
+      The ball is still going. The invitation arrives when the collection drops.
+    </div>
+    <div class="about-quote">"Every guest at the ball wore a face that wasn't theirs. Every token in the ledger carries a fingerprint that cannot be faked. The costume is the art. The fingerprint is the proof."<br>— Thomas Lee Harvey</div>
   </div>
 
   <div class="about-section">
     <div class="about-h1">What You Own When You Buy</div>
     <div class="about-p">
-      You own the PNG. You own the Certificate of Authenticity. You own the OM109 fingerprint. You own the ledger entry that records your purchase — permanently, immutably, in a system that cannot be edited by anyone including its creator.
+      When your Stripe payment clears, Omega delivers a museum-grade provenance package. Four documents. One chain of custody. Permanent record.
     </div>
     <div class="about-p">
-      At the moment your Stripe payment clears, the Omega system: marks the token sold, writes your email as the new owner in the NFT registry, records a double-entry ledger transaction denominated in USD, and emails you the PNG and Certificate of Authenticity with the full cryptographic provenance attached.
+      <strong>Certificate of Authenticity (COA)</strong> — a cryptographically signed document bearing the token ID, collection, rarity, SHA-256 image hash, and OM109 fingerprint. This is the primary ownership document. It is generated at the moment of purchase and tied to your identity in the ledger.
     </div>
     <div class="about-p">
-      <strong>This is a digital asset. Preserve it.</strong> The PNG, the certificate, the OM109 fingerprint — these are your responsibility to keep. Omega provides the provenance. The ledger provides the permanent record. You hold the asset.
+      <strong>Art Passport</strong> — the travel document for the piece. Every collection the token has passed through, every wallet that has held it, every transfer recorded in the immutable ledger. A physical museum issues a provenance record that may span decades. Omega issues one at the moment of mint and updates it with every transfer. Permanently.
+    </div>
+    <div class="about-p">
+      <strong>OM109 Fingerprint Certificate</strong> — the cryptographic root document. The dual-key signature computed at mint, the genesis seed, the image hash inputs, and the final fingerprint output. This is the document that allows independent verification of authenticity without trusting Omega at all. The math speaks for itself.
+    </div>
+    <div class="about-p">
+      <strong>Provenance Scroll</strong> — the complete chain of custody from genesis to your wallet. Every ledger entry, every hash, every timestamp. Formatted for archival. Designed to outlast the platform that issued it.
+    </div>
+    <div class="about-p">
+      You also own the PNG — the actual artwork, full resolution, generated on ARM64 hardware, yours to preserve. <strong>This is a digital asset. The PNG, the certificates, the fingerprint — these are your responsibility to keep.</strong> Omega provides the provenance. The ledger provides the permanent record. You hold the asset.
     </div>
     <a class="verify-link" href="https://omegaledgernode.netlify.app/health" target="_blank">Verify on Omega Ledger →</a>
   </div>
@@ -229,84 +451,22 @@ Monolith            · #2005 "Founder"   · Thomas Diamond
   <div class="about-section">
     <div class="about-h1">Thomas Lee Harvey</div>
     <div class="about-p">
-      Self-taught. No team. No funding. No laptop. No cloud provider. Thomas Lee Harvey built a Byzantine consensus financial system, an immutable hash-chained ledger with over two million entries, a dual-key cryptographic signature algorithm he invented himself, virtual card issuance with Luhn-valid PANs and AES-256 encryption, a B2B revenue engine with paying clients, four generative art collections with deterministic rarity, and a live NFT marketplace with a shopping cart, Stripe checkout, and automatic Certificate of Authenticity delivery — entirely on two Android phones in a terminal emulator, on ARM64 hardware, with no external dependencies beyond a free Cloudflare tunnel.
+      Self-taught. No team. No funding. No laptop. No cloud provider. Thomas Lee Harvey built a Byzantine consensus financial system, an immutable hash-chained ledger with over two million entries, a dual-key cryptographic signature algorithm he invented and named after his birthday, virtual card issuance with Luhn-valid PANs and AES-256 encryption, four generative art collections with deterministic rarity, and a live NFT marketplace with Stripe checkout and museum-grade provenance delivery — entirely on two Android phones in a terminal emulator, on ARM64 hardware, with no external dependencies beyond a free Cloudflare tunnel.
     </div>
     <div class="about-p">
-      The discipline that makes it trustworthy is the same discipline that built it. Every number is verified against the database before it's stated. Every patch is compiled before it runs. Every component self-grades every session. The Oracle has never been manually reset. The immutability trigger has never been bypassed. The ledger has never been edited. When the system found a bug, it was fixed and documented — not hidden. That is what integrity looks like in infrastructure.
+      He has been leaving messages in the art since the first collection. Whether you find them depends on how closely you look. The game is already in progress. The ledger has already recorded your move.
     </div>
     <div class="about-p">
-      This is not a side project. This is not a proof of concept. This is a production system that has processed millions of ledger entries, issued cryptographically authenticated art to collectors, and maintained financial records to ISO 20022 standard — running continuously on two phones that charge on a nightstand.
+      The discipline that makes it trustworthy is the same discipline that built it. Every number is verified against the database before it is stated. Every patch compiles before it runs. Every component self-grades every session. The Oracle has never been manually reset. The immutability trigger has never been bypassed. The ledger has never been edited. When the system found a bug, it was fixed and documented — not hidden. That is what integrity looks like in infrastructure.
     </div>
-    <div class="about-quote">"Omega Ledger knows what a dollar is. Bitcoin doesn't. Ethereum doesn't. I built a financial system that authenticates art, issues cards, verifies provenance, and denominates everything in dollars — from first principles, on hardware that fits in a pocket. No team. No funding. No excuses."<br>— Thomas Lee Harvey, CEO & Founder</div>
+    <div class="about-quote">"Omega Ledger knows what a dollar is. Bitcoin doesn't. Ethereum doesn't. I built a financial system that authenticates art, issues cards, verifies provenance, and denominates everything in dollars — from first principles, on hardware that fits in a pocket. No team. No funding. No excuses."<br>— Thomas Lee Harvey, CEO &amp; Founder</div>
   </div>
 
 </div>
 
 
-<div id="explorer-panel" class="explorer-panel">
-  <div class="exp-stat-row" id="exp-stats"></div>
-
-  <div class="exp-tabs">
-    <button class="exp-tab active" onclick="expTab('wallets')">Founding Wallets</button>
-    <button class="exp-tab" onclick="expTab('tokens')">NFT Registry</button>
-    <button class="exp-tab" onclick="expTab('ledger')">Ledger History</button>
-  </div>
-
-  <!-- Wallets -->
-  <div class="exp-content active" id="exp-wallets">
-    <div class="exp-section">
-      <div class="exp-h1"><span>Founding Wallets</span><span style="color:#8B7355;font-size:9px;">13 WALLETS · LIVE BALANCES</span></div>
-      <table class="exp-table" id="wallets-table">
-        <thead><tr>
-          <th>Wallet Name</th>
-          <th>Wallet ID</th>
-          <th>Balance (USD)</th>
-          <th>NFT Holdings</th>
-        </tr></thead>
-        <tbody id="wallets-body"><tr><td colspan="4" style="color:#8B7355;text-align:center;padding:30px;">Loading...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Tokens -->
-  <div class="exp-content" id="exp-tokens">
-    <div class="exp-section">
-      <div class="exp-h1"><span>NFT Registry</span><span style="color:#8B7355;font-size:9px;">400 TOKENS · ALL COLLECTIONS</span></div>
-      <input class="exp-search" id="token-search" placeholder="Search by title, collection, rarity, token ID..." oninput="filterTokens()">
-      <table class="exp-table" id="tokens-table">
-        <thead><tr>
-          <th>Token ID</th>
-          <th>Collection</th>
-          <th>Title</th>
-          <th>Rarity</th>
-          <th>Status</th>
-          <th>OM109</th>
-          <th>Minted</th>
-        </tr></thead>
-        <tbody id="tokens-body"><tr><td colspan="7" style="color:#8B7355;text-align:center;padding:30px;">Loading...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Ledger -->
-  <div class="exp-content" id="exp-ledger">
-    <div class="exp-section">
-      <div class="exp-h1"><span>Ledger History</span><span style="color:#8B7355;font-size:9px;">IMMUTABLE · SHA-256 HASH-CHAINED</span></div>
-      <table class="exp-table">
-        <thead><tr>
-          <th>Time</th>
-          <th>Event</th>
-          <th>Collection</th>
-          <th>Token</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Amount</th>
-          <th>Chain Hash</th>
-        </tr></thead>
-        <tbody id="ledger-body"><tr><td colspan="8" style="color:#8B7355;text-align:center;padding:30px;">Loading...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+<div id="explorer-panel" class="explorer-panel" style="padding:0;overflow:hidden;">
+  <iframe src="omega_explorer.html" style="width:100%;height:82vh;border:none;display:block;"></iframe>
 </div>
 
 <script>
@@ -358,7 +518,7 @@ function loadExplorer() {
 }
 
 function loadTokens() {
-  var colls = ['echoes','somnium','paracosm','monolith'];
+  var colls = ['echoes','somnium','paracosm','monolith','le-bal'];
   var all = [];
   var done = 0;
   colls.forEach(function(c){
@@ -471,13 +631,22 @@ function showTab(tab) {
 
 
 <script>
-var API_URL = 'https://fitted-interview-sen-spent.trycloudflare.com';
-var COLLECTIONS = ['echoes', 'somnium', 'paracosm', 'monolith'];
+var API_URL = 'https://prize-loud-desktop-inch.trycloudflare.com';
+// Dynamic API URL — fetch from broker on load
+(async function() {
+  try {
+    var r = await fetch('http://127.0.0.1:8085/current-api');
+    var d = await r.json();
+    if (d.api) API_URL = d.api;
+  } catch(e) {}
+})();
+var COLLECTIONS = ['echoes', 'somnium', 'paracosm', 'monolith', 'le-bal'];
 var FOLDER_MAP = {
   'Echoes of Eternity': { folder: 'echoes_of_eternity', pad: 4 },
   'Somnium':            { folder: 'somnium',            pad: 4 },
   'Paracosm':           { folder: 'paracosm',            pad: 4 },
-  'Monolith':           { folder: 'monolith',            pad: 4 }
+  'Monolith':           { folder: 'monolith',            pad: 4 },
+  'Le Bal des Rêves':   { folder: 'le_bal_des_reves',   pad: 4 }
 };
 var ALL_TOKENS = [];
 var currentFilter = 'all';
@@ -522,7 +691,7 @@ async function loadAll() {
 }
 
 function buildFilters() {
-  var colls = ['all', 'Echoes of Eternity', 'Somnium', 'Paracosm', 'Monolith'];
+  var colls = ['all', 'Echoes of Eternity', 'Somnium', 'Paracosm', 'Monolith', 'Le Bal des Rêves'];
   var wrap = document.getElementById('filters');
   wrap.innerHTML = colls.map(function(c) {
     var label = c === 'all' ? 'All (' + ALL_TOKENS.length + ')' : c;
@@ -538,12 +707,27 @@ function buildFilters() {
   });
 }
 
+function openFullscreen(src, title) {
+  var modal = document.getElementById('fullscreen-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'fullscreen-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;';
+    modal.onclick = function(){ modal.style.display='none'; };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<img src="' + src + '" style="max-width:95vw;max-height:90vh;object-fit:contain;">' +
+    '<div style="color:#C9A84C;font-family:\'Cormorant Garamond\',serif;font-size:14px;margin-top:12px;letter-spacing:1px;">' + title + '</div>' +
+    '<div style="color:#8B7355;font-size:10px;margin-top:6px;">Tap anywhere to close</div>';
+  modal.style.display = 'flex';
+}
+
 function render() {
   var filtered = currentFilter === 'all' ? ALL_TOKENS : ALL_TOKENS.filter(function(t){ return t.collection === currentFilter; });
   var gallery = document.getElementById('gallery');
   gallery.innerHTML = filtered.map(function(t) {
     var img = getImagePath(t);
-    return '<div class="card-wrap" onclick="this.classList.toggle(\'flipped\')">' +
+    return '<div class="card-wrap" onclick="this.classList.toggle(\'flipped\')" ondblclick="event.stopPropagation(); openFullscreen(\'' + img + '\', \'' + t.title.replace(/'/g,"\\'") + '\')">' +
       '<div class="card">' +
         '<div class="face face-front">' +
           '<img src="' + img + '" alt="' + t.title + '" loading="lazy" onerror="this.parentElement.style.background=\'#0D0B0E\'; this.style.display=\'none\';">' +

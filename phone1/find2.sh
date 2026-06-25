@@ -5,7 +5,7 @@
 echo "Scanning for Phone 2..."
 
 FOUND=""
-for i in $(seq 1 20); do
+for i in $(seq 1 254); do
   ip="192.168.11.$i"
   result=$(ssh -i ~/.ssh/omega_bridge \
     -p 8022 \
