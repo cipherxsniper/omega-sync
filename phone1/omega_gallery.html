@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omega Art Studio — Gallery</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#07100d;color:#F0E6D3;font-family:'Space Grotesk',sans-serif;min-height:100vh;}
+header{padding:20px;text-align:center;border-bottom:1px solid #2a1f15;}
+h1{font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:3px;color:#C9A84C;}
+.status{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8B7355;margin-top:8px;}
+#debug{color:#ff4d6a;font-size:10px;white-space:pre-wrap;text-align:left;max-width:600px;margin:8px auto;}
+.filters{display:flex;gap:8px;justify-content:center;padding:14px;flex-wrap:wrap;}
+.filter-btn{padding:7px 14px;border-radius:8px;background:#0f0d0b;border:1px solid #2a1f15;color:#8B7355;font-size:11px;cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.filter-btn.active{background:#2a1e0f;border-color:#C9A84C;color:#C9A84C;}
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;padding:20px;max-width:1400px;margin:0 auto;}
+.card-wrap{perspective:1000px;height:240px;cursor:pointer;}
+.card{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d;}
+.card-wrap.flipped .card{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;overflow:hidden;border:1px solid #2a1f15;}
+.face-front{background:#0c1714;}
+.face-front img{width:100%;height:100%;object-fit:cover;display:block;}
+.face-back{transform:rotateY(180deg);background:#0c1714;padding:12px;font-size:10px;overflow-y:auto;}
+.rarity-tag{position:absolute;top:6px;left:6px;background:rgba(201,168,76,.15);border:1px solid #C9A84C;color:#C9A84C;font-size:8px;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;}
+.card-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:8px;font-size:10px;}
+.back-row{margin-bottom:6px;}
+.back-label{color:#8B7355;font-size:8px;letter-spacing:1px;text-transform:uppercase;}
+.back-value{font-family:'JetBrains Mono',monospace;font-size:9px;color:#F0E6D3;word-break:break-all;}
+
+#cart-icon{position:fixed;top:16px;right:16px;z-index:1000;background:#1C1612;border:1px solid #C9A84C;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}
+#cart-badge{position:absolute;top:-6px;right:-6px;background:#C9A84C;color:#0D0B0E;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;}
+#cart-drawer{position:fixed;top:0;right:-420px;width:380px;height:100vh;background:#13100F;border-left:1px solid #C9A84C;z-index:999;transition:right 0.3s ease;overflow-y:auto;padding:20px;box-sizing:border-box;}
+#cart-drawer.open{right:0;}
+#cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:998;display:none;}
+#cart-overlay.open{display:block;}
+.cart-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #C9A84C;padding-bottom:12px;margin-bottom:16px;}
+.cart-title{font-family:'JetBrains Mono',monospace;color:#C9A84C;font-size:12px;letter-spacing:2px;text-transform:uppercase;}
+.cart-close{background:none;border:none;color:#C9A84C;font-size:20px;cursor:pointer;}
+.cart-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #2a1f15;align-items:center;}
+.cart-item-info{flex:1;}
+.cart-item-title{color:#F0E6D3;font-size:11px;font-weight:bold;}
+.cart-item-sub{color:#8B7355;font-size:9px;font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.cart-item-price{color:#C9A84C;font-size:12px;font-weight:bold;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.cart-remove{background:none;border:none;color:#8B7355;cursor:pointer;font-size:16px;}
+.cart-remove:hover{color:#C9A84C;}
+.cart-total-row{display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid #C9A84C;margin-top:8px;}
+.cart-total-label{color:#8B7355;font-size:11px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;}
+.cart-total-amt{color:#C9A84C;font-size:16px;font-weight:bold;font-family:'JetBrains Mono',monospace;}
+.checkout-btn{display:block;width:100%;padding:12px;background:#C9A84C;color:#0D0B0E;border:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:bold;cursor:pointer;margin-top:10px;font-family:'JetBrains Mono',monospace;}
+.checkout-btn:hover{background:#a8883e;}
+.cart-empty{text-align:center;color:#8B7355;font-size:11px;padding:40px 0;font-style:italic;}
+.sold-overlay{position:absolute;inset:0;background:rgba(13,11,14,.75);display:flex;align-items:center;justify-content:center;border-radius:10px;pointer-events:none;}
+.sold-badge{border:1px solid #8B7355;color:#8B7355;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;padding:5px 12px;text-transform:uppercase;}
+.in-cart-tag{position:absolute;bottom:32px;left:6px;right:6px;background:rgba(201,168,76,.9);color:#0D0B0E;font-size:8px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-align:center;padding:3px;border-radius:2px;pointer-events:none;}
+
+<style>
+.tab-nav{display:flex;gap:0;border-bottom:1px solid #2a1f15;margin:0;padding:0 20px;background:#0D0B0E;}
+.tab-btn{padding:12px 28px;background:none;border:none;border-bottom:2px solid transparent;color:#8B7355;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.tab-btn.active{color:#C9A84C;border-bottom-color:#C9A84C;}
+.tab-btn:hover{color:#F0E6D3;}
+#about-panel{display:none;max-width:860px;margin:0 auto;padding:40px 20px 80px;color:#F0E6D3;}
+#about-panel.visible{display:block;}
+#gallery-panel{display:block;}
+#gallery-panel.hidden{display:none;}
+.about-section{margin-bottom:52px;}
+.about-h1{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#C9A84C;margin-bottom:18px;border-bottom:1px solid #2a1f15;padding-bottom:10px;}
+.about-p{font-size:14px;line-height:1.9;color:#d4c9b8;margin-bottom:16px;}
+.about-p strong{color:#C9A84C;}
+.about-mono{font-family:'JetBrains Mono',monospace;background:#0c0a08;border:1px solid #2a1f15;border-left:3px solid #C9A84C;padding:16px 20px;font-size:11px;color:#C9A84C;margin:18px 0;line-height:1.8;overflow-x:auto;}
+.about-quote{font-style:italic;color:#8B7355;border-left:2px solid #2a1f15;padding-left:20px;margin:24px 0;font-size:13px;line-height:1.8;}
+.verify-link{display:inline-block;margin-top:24px;padding:10px 24px;border:1px solid #C9A84C;color:#C9A84C;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all .2s;}
+.verify-link:hover{background:#C9A84C;color:#0D0B0E;}
+.stat-row{display:flex;flex-wrap:wrap;gap:16px;margin:20px 0;}
+.stat-box{flex:1;min-width:140px;background:#0c0a08;border:1px solid #2a1f15;padding:16px;text-align:center;}
+.stat-num{font-family:'JetBrains Mono',monospace;font-size:22px;color:#C9A84C;display:block;}
+.stat-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8B7355;margin-top:4px;display:block;}
+
+.explorer-panel{display:none;max-width:1100px;margin:0 auto;padding:30px 20px 80px;}
+.explorer-panel.visible{display:block;}
+.exp-section{margin-bottom:44px;}
+.exp-h1{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#C9A84C;margin-bottom:16px;border-bottom:1px solid #2a1f15;padding-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.exp-table{width:100%;border-collapse:collapse;font-size:11px;}
+.exp-table th{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8B7355;padding:8px 10px;border-bottom:1px solid #2a1f15;text-align:left;}
+.exp-table td{font-family:'JetBrains Mono',monospace;font-size:10px;color:#F0E6D3;padding:8px 10px;border-bottom:1px solid #150f0a;word-break:break-all;}
+.exp-table tr:hover td{background:#0f0c09;}
+.exp-bal{color:#C9A84C;font-weight:bold;}
+.exp-sold{color:#8B7355;}
+.exp-unsold{color:#4CAF7D;}
+.exp-founder{color:#C9A84C;}
+.exp-hash{font-size:8px;color:#5a4a35;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.exp-search{background:#0c0a08;border:1px solid #2a1f15;color:#F0E6D3;font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 14px;width:100%;max-width:400px;margin-bottom:16px;outline:none;}
+.exp-search:focus{border-color:#C9A84C;}
+.exp-stat-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px;}
+.exp-stat{flex:1;min-width:120px;background:#0c0a08;border:1px solid #2a1f15;padding:14px;text-align:center;}
+.exp-stat-num{font-family:'JetBrains Mono',monospace;font-size:20px;color:#C9A84C;display:block;}
+.exp-stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#8B7355;margin-top:4px;display:block;}
+.exp-badge{display:inline-block;padding:2px 7px;border-radius:2px;font-size:8px;letter-spacing:1px;text-transform:uppercase;}
+.badge-sold{background:rgba(139,115,85,.15);border:1px solid #8B7355;color:#8B7355;}
+.badge-unsold{background:rgba(76,175,125,.1);border:1px solid #4CAF7D;color:#4CAF7D;}
+.badge-founder{background:rgba(201,168,76,.1);border:1px solid #C9A84C;color:#C9A84C;}
+.exp-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.exp-tab{padding:6px 16px;background:#0c0a08;border:1px solid #2a1f15;color:#8B7355;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;}
+.exp-tab.active{border-color:#C9A84C;color:#C9A84C;}
+.exp-content{display:none;}
+.exp-content.active{display:block;}
+
+/* ── INVITATION OVERLAY ─────────────────────────────── */
+#invite-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at center, #1a0e05 0%, #0a0602 100%);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .8s ease;
+}
+#invite-overlay.fade-out{opacity:0;pointer-events:none;}
+#invite-overlay.gone{display:none;}
+
+.invite-envelope{
+  position:relative;width:320px;cursor:pointer;
+  animation:floatEnv 3s ease-in-out infinite;
+}
+@keyframes floatEnv{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+.invite-envelope-body{
+  width:320px;height:200px;
+  background:linear-gradient(135deg,#1a0e05 0%,#2a1a08 50%,#1a0e05 100%);
+  border:1px solid #8B5E2A;
+  border-radius:4px;
+  position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.8), inset 0 1px 0 rgba(201,168,76,.2);
+}
+.invite-envelope-flap{
+  position:absolute;top:0;left:0;width:100%;
+  border-left:160px solid transparent;
+  border-right:160px solid transparent;
+  border-top:100px solid #1a1005;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  transform-origin:top center;
+  transition:transform .6s ease;
+}
+.invite-envelope.open .invite-envelope-flap{
+  transform:rotateX(180deg);
+}
+.invite-wax{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:64px;height:64px;
+  background:radial-gradient(circle,#8B0000 0%,#5a0000 60%,#3a0000 100%);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(139,0,0,.6);
+  font-size:24px;color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  transition:transform .3s, box-shadow .3s;
+}
+.invite-envelope:hover .invite-wax{
+  transform:translate(-50%,-50%) scale(1.1);
+  box-shadow:0 6px 24px rgba(139,0,0,.8);
+}
+.invite-hint{
+  text-align:center;margin-top:20px;
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:16px;
+  color:#8B7355;letter-spacing:1px;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* ── LETTER PANEL ───────────────────────────────────── */
+#invite-letter{
+  display:none;
+  max-width:400px;width:90%;
+  background:linear-gradient(160deg,#1a1208 0%,#0f0c06 100%);
+  border:1px solid #8B5E2A;
+  padding:36px 32px;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.9);
+  animation:letterRise .5s ease;
+}
+@keyframes letterRise{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.letter-omega{
+  text-align:center;font-size:48px;color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  margin-bottom:16px;
+  text-shadow:0 0 30px rgba(201,168,76,.4);
+}
+.letter-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-style:italic;
+  color:#F0E6D3;text-align:center;
+  margin-bottom:8px;letter-spacing:1px;
+}
+.letter-subtitle{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;color:#8B7355;
+  text-align:center;margin-bottom:28px;
+  font-style:italic;
+}
+.letter-divider{
+  border:none;border-top:1px solid #2a1f15;margin:20px 0;
+}
+.letter-body{
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px;color:#d4c9b8;
+  line-height:1.8;text-align:center;
+  margin-bottom:28px;font-style:italic;
+}
+.invite-paths{
+  display:flex;flex-direction:column;gap:10px;
+}
+.invite-path{
+  padding:12px 20px;
+  background:rgba(201,168,76,.05);
+  border:1px solid #2a1f15;
+  color:#C9A84C;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+  text-align:center;
+}
+.invite-path:hover{
+  background:rgba(201,168,76,.12);
+  border-color:#C9A84C;
+  transform:translateX(4px);
+}
+.letter-sig{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;color:#8B7355;
+  text-align:center;margin-top:24px;
+  font-style:italic;
+}
+
+</style>
+</style>
+</head>
+<body>
+
+<!-- ── INVITATION OVERLAY ──────────────────────────── -->
+<div id="invite-overlay">
+  <div style="display:flex;flex-direction:column;align-items:center;">
+
+    <!-- Envelope (shown first) -->
+    <div id="invite-envelope-wrap">
+      <div class="invite-envelope" id="invite-env" onclick="openEnvelope()">
+        <div class="invite-envelope-body">
+          <div class="invite-envelope-flap" id="env-flap"></div>
+          <div class="invite-wax">Ω</div>
+        </div>
+      </div>
+      <div class="invite-hint">Tap to open your invitation</div>
+    </div>
+
+    <!-- Letter (shown after tap) -->
+    <div id="invite-letter">
+      <div class="letter-omega">Ω</div>
+      <div class="letter-title">You Are Cordially Invited</div>
+      <div class="letter-subtitle">to the Omega Art Studio</div>
+      <hr class="letter-divider">
+      <div class="letter-body">
+        Where cryptography meets surrealism.<br>
+        Where every token is a permanent truth<br>
+        inscribed on an immutable ledger.<br><br>
+        Choose your path.
+      </div>
+      <div class="invite-paths">
+        <div class="invite-path" onclick="enterPath('gallery')">
+          ✦ &nbsp; Omega Art Studio &nbsp; ✦
+        </div>
+        <div class="invite-path" onclick="enterPath('explorer')">
+          ✦ &nbsp; Omega Ledger &nbsp; ✦
+        </div>
+        <div class="invite-path" onclick="enterPath('about')">
+          ✦ &nbsp; About Omega &nbsp; ✦
+        </div>
+      </div>
+      <div class="letter-sig">
+        — Thomas Lee Harvey, Founder
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openEnvelope() {
+  document.getElementById('env-flap').style.transform = 'rotateX(180deg)';
+  setTimeout(function() {
+    document.getElementById('invite-envelope-wrap').style.display = 'none';
+    document.getElementById('invite-letter').style.display = 'block';
+  }, 600);
+}
+
+function enterPath(tab) {
+  var overlay = document.getElementById('invite-overlay');
+  overlay.classList.add('fade-out');
+  setTimeout(function() {
+    overlay.classList.add('gone');
+    showTab(tab);
+  }, 800);
+}
+</script>
+
+<header>
+  <h1>OMEGA ART STUDIO</h1>
+  <div class="status" id="status">Loading...</div>
+  <pre id="debug"></pre>
+</header>
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('gallery')">Gallery</button>
+  <button class="tab-btn" onclick="showTab('about')">About Omega</button>
+  <button class="tab-btn" onclick="showTab('explorer')">Ω Ledger</button>
+</div>
+<div id="gallery-panel">
+<div class="filters" id="filters"></div>
+<div id="gallery"></div></div>
+<div id="about-panel">
+
+  <div class="about-section">
+    <div class="about-h1">The Story</div>
+    <div class="about-p">
+      There is a game being played. You may not have noticed it yet. Thomas Lee Harvey has been leaving messages inside the art — not signatures, not watermarks, but intentions. Symbols that recur across collections. Figures that face the wrong direction. Costumes that should not exist. Each collection is a move in a game that has no published rules, only clues. Surrealism was always a game. Dalí knew it. Magritte knew it. The pipe was never a pipe. The melting clock was never about time.
+    </div>
+    <div class="about-p">
+      Omega was built by one person. No laptop. No team. No external funding. No cloud provider. Two Android phones, a terminal emulator, and an architecture that most funded engineering teams have never attempted. What exists today is a complete distributed financial operating system, a cryptographic art authentication layer, a live NFT marketplace, and a virtual card issuance system — all running on hardware that fits in two pockets.
+    </div>
+    <div class="about-p">
+      That is not a metaphor or a marketing line. The database is PostgreSQL 18.2 running on a physical Android phone, accessed over SSH from a second phone acting as the control plane. The consensus engine enforces Byzantine fault-tolerant approval across two physical nodes. The ledger has recorded over <strong>2,020,075 immutable entries</strong>. Its own trigger has blocked its creator from deleting a single row. The system protects itself from everyone — including Thomas.
+    </div>
+    <div class="about-p">
+      This was built in sessions. Late nights. One patch at a time. Every component self-grades through a 17-part Oracle that cannot regress. Every number in this system is real — pulled from the database, not written into a document.
+    </div>
+    <div class="about-quote">"I didn't build a portfolio project. I built infrastructure. The ledger doesn't care who created it — it blocks everyone equally."<br>— Thomas Lee Harvey</div>
+    <div class="stat-row">
+      <div class="stat-box"><span class="stat-num">2M+</span><span class="stat-label">Ledger Entries</span></div>
+      <div class="stat-box"><span class="stat-num">500</span><span class="stat-label">Authenticated NFTs</span></div>
+      <div class="stat-box"><span class="stat-num">125</span><span class="stat-label">Database Tables</span></div>
+      <div class="stat-box"><span class="stat-num">2</span><span class="stat-label">Android Phones</span></div>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">Omega Bank — The Ledger That Knows What a Dollar Is</div>
+    <div class="about-p">
+      Bitcoin does not know what a dollar is. Ethereum does not know what a dollar is. They are protocols for moving tokens between addresses. When you buy something on-chain, the blockchain records a hash. It does not record a sale. It does not record a counterparty. It does not record a currency. It records a state transition and calls it ownership. That is not ownership. That is a pointer.
+    </div>
+    <div class="about-p">
+      <strong>Omega Ledger knows what a dollar is.</strong> Every transaction is denominated in USD. Every entry is double-entry bookkeeping — a debit and a credit, balanced to the cent, SHA-256 hash-chained, ISO 20022 compliant. Every NFT purchase writes a real financial record: who paid, how much, which asset transferred, and when. Not a token transfer. A transaction. The same standard that moves money between banks. Applied to art. On two phones.
+    </div>
+    <div class="about-p">
+      When you buy an Omega NFT, three things happen simultaneously: a Stripe payment clears in USD, an immutable ledger entry is written with your identity as the new owner, and an OM109 cryptographic fingerprint ties the art to the financial record permanently. The art and the money are the same ledger entry. No other NFT platform does this because no other NFT platform has a real financial ledger underneath it.
+    </div>
+    <div class="about-p">
+      The ledger uses 7-layer double-entry accounting with SHA-256 hash chaining. Every entry references the hash of the entry before it. Tampering with any record breaks every record after it. The chain is the proof. There is no admin override. There is no rollback. The immutability trigger has blocked its own creator.
+    </div>
+    <div class="about-mono">
+omega_bank     → 125 tables · PostgreSQL 18.2 · Phone 2 (ARM64)
+omega_ledger   → 39 tables  · NFT registry · provenance · COAs
+entries        → 2,020,075+ · immutable · SHA-256 hash-chained
+consensus      → Byzantine fault-tolerant · 2-node quorum
+ISO 20022      → pain.001 XML · auto-generated on every INSERT
+    </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">OM109 — A Cryptographic Primitive Built From Scratch</div>
+    <div class="about-p">
+      OM109 is Thomas Lee Harvey's original dual-key alternating signature algorithm — named after his birthday, October 9th. It was invented specifically for Omega. Not adopted. Not wrapped. Invented. It signs every financial transaction and every piece of art using the same primitive, creating a single cryptographic thread that runs through the entire system.
+    </div>
+    <div class="about-mono">
+genesis     = SHA256(GENESIS_SEED)
+sig_a       = SHA256(genesis + ":A:" + token_id + ":" + image_hash)
+sig_b       = SHA256(genesis + ":B:" + token_id + ":" + image_hash + ":" + sig_a)
+fingerprint = SHA256(sig_a[:32] + sig_b[:32])
+    </div>
+    <div class="about-p">
+      Zero collisions across all 400 tokens across all four collections. When you buy an Omega NFT, the OM109 fingerprint of your token is written into the financial ledger at the moment of purchase. The art provenance and the payment record share the same cryptographic root. <strong>The art and the money are the same ledger entry.</strong>
+    </div>
+    <div class="about-quote">"The same primitive that secures a dollar transfer secures a piece of art. That is not a coincidence. That is architecture."</div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">The Art — Hyper-Surrealism</div>
+    <div class="about-p">
+      The four collections — <strong>Echoes of Eternity, Somnium, Paracosm, Monolith</strong> — are not generative noise. They are a defined aesthetic movement: Hyper-Surrealism. Where classical Surrealism reached for the unconscious through paint and canvas — where Dalí dripped clocks and Magritte hid faces behind fruit — Hyper-Surrealism reaches for it through neural computation. Latent space as dreamscape. Diffusion as vision. The model's hallucination as the artist's intention made visible.
+    </div>
+    <div class="about-p">
+      Thomas does not describe what he wants the model to produce. He describes what cannot exist — and then makes it exist. Clouds that are also faces. Gold that is also grief. A figure that is simultaneously costume and identity, mask and self. Every piece is a subliminal transmission. The symbols recur. The geometry repeats. If you have looked at more than one collection, you have already received messages you have not yet decoded.
+    </div>
+    <div class="about-p">
+      This is a surrealist game of Clue — but the weapon is a fingerprint, the room is a ledger, and the suspect is whoever holds the token. Every collection is a chapter. Every rarity tier is a clue. The Impossible Diamond is not a reward for spending more. It is an invitation to look closer.
+    </div>
+    <div class="about-p">
+      Every image was generated on ARM64 hardware using Stable Diffusion, with rarity seeded deterministically. The rarity is not assigned after the fact. It is computed from the token ID at mint time and cannot be changed. An Impossible Diamond was always going to be an Impossible Diamond.
+    </div>
+    <div class="about-p">
+      Thomas personally holds one Impossible Diamond in every collection. Not as a collector. As a founder. The first four entries in the registry — one per collection — permanently founder-linked, permanently immutable.
+    </div>
+    <div class="about-mono">
+Echoes of Eternity  · #0085 "Stasis"    · Thomas Diamond
+Somnium             · #0017 "Aloft"     · Thomas Diamond
+Paracosm            · #1002 "Obelisk"   · Thomas Diamond
+Monolith            · #2005 "Founder"   · Thomas Diamond
+    </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">Bal de Rêves — The Next Collection</div>
+    <div class="about-p">
+      In 1972, the Rothschild family hosted a masquerade ball at Château de Ferrières. Dalí attended. The costumes were impossible — antlered headdresses cast in gold, birdcages worn as crowns, a man with an apple for a face. It was not a party. It was a séance. It was Surrealism in formal wear, sitting down to dinner and refusing to leave.
+    </div>
+    <div class="about-p">
+      The next Omega collection is <strong>Bal de Rêves — The Ball of Dreams</strong>. Each NFT is a character. Each character wears a costume that should not exist. The collection is structured like a deck of graded trading cards — because every piece deserves to be handled like one.
+    </div>
+    <div class="about-p">
+      Rarity is visible at the edge. <strong>Impossible Diamond</strong> cards carry a double hairline rule in diamond-grade finish — ultra rare, unmistakable. <strong>Ultra Rare</strong> cards have a gold border. <strong>Rare</strong> cards carry silver. <strong>Bronze</strong> gets a warm metallic edge. <strong>Common</strong> cards have no border — but every card in the deck is graded, weighted, and feels like it was pulled from a vault.
+    </div>
+    <div class="about-p">
+      The ball is still going. The invitation arrives when the collection drops.
+    </div>
+    <div class="about-quote">"Every guest at the ball wore a face that wasn't theirs. Every token in the ledger carries a fingerprint that cannot be faked. The costume is the art. The fingerprint is the proof."<br>— Thomas Lee Harvey</div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">What You Own When You Buy</div>
+    <div class="about-p">
+      When your Stripe payment clears, Omega delivers a museum-grade provenance package. Four documents. One chain of custody. Permanent record.
+    </div>
+    <div class="about-p">
+      <strong>Certificate of Authenticity (COA)</strong> — a cryptographically signed document bearing the token ID, collection, rarity, SHA-256 image hash, and OM109 fingerprint. This is the primary ownership document. It is generated at the moment of purchase and tied to your identity in the ledger.
+    </div>
+    <div class="about-p">
+      <strong>Art Passport</strong> — the travel document for the piece. Every collection the token has passed through, every wallet that has held it, every transfer recorded in the immutable ledger. A physical museum issues a provenance record that may span decades. Omega issues one at the moment of mint and updates it with every transfer. Permanently.
+    </div>
+    <div class="about-p">
+      <strong>OM109 Fingerprint Certificate</strong> — the cryptographic root document. The dual-key signature computed at mint, the genesis seed, the image hash inputs, and the final fingerprint output. This is the document that allows independent verification of authenticity without trusting Omega at all. The math speaks for itself.
+    </div>
+    <div class="about-p">
+      <strong>Provenance Scroll</strong> — the complete chain of custody from genesis to your wallet. Every ledger entry, every hash, every timestamp. Formatted for archival. Designed to outlast the platform that issued it.
+    </div>
+    <div class="about-p">
+      You also own the PNG — the actual artwork, full resolution, generated on ARM64 hardware, yours to preserve. <strong>This is a digital asset. The PNG, the certificates, the fingerprint — these are your responsibility to keep.</strong> Omega provides the provenance. The ledger provides the permanent record. You hold the asset.
+    </div>
+    <a class="verify-link" href="https://omegaledgernode.netlify.app/health" target="_blank">Verify on Omega Ledger →</a>
+  </div>
+
+  <div class="about-section">
+    <div class="about-h1">Thomas Lee Harvey</div>
+    <div class="about-p">
+      Self-taught. No team. No funding. No laptop. No cloud provider. Thomas Lee Harvey built a Byzantine consensus financial system, an immutable hash-chained ledger with over two million entries, a dual-key cryptographic signature algorithm he invented and named after his birthday, virtual card issuance with Luhn-valid PANs and AES-256 encryption, four generative art collections with deterministic rarity, and a live NFT marketplace with Stripe checkout and museum-grade provenance delivery — entirely on two Android phones in a terminal emulator, on ARM64 hardware, with no external dependencies beyond a free Cloudflare tunnel.
+    </div>
+    <div class="about-p">
+      He has been leaving messages in the art since the first collection. Whether you find them depends on how closely you look. The game is already in progress. The ledger has already recorded your move.
+    </div>
+    <div class="about-p">
+      The discipline that makes it trustworthy is the same discipline that built it. Every number is verified against the database before it is stated. Every patch compiles before it runs. Every component self-grades every session. The Oracle has never been manually reset. The immutability trigger has never been bypassed. The ledger has never been edited. When the system found a bug, it was fixed and documented — not hidden. That is what integrity looks like in infrastructure.
+    </div>
+    <div class="about-quote">"Omega Ledger knows what a dollar is. Bitcoin doesn't. Ethereum doesn't. I built a financial system that authenticates art, issues cards, verifies provenance, and denominates everything in dollars — from first principles, on hardware that fits in a pocket. No team. No funding. No excuses."<br>— Thomas Lee Harvey, CEO &amp; Founder</div>
+  </div>
+
+</div>
+
+
+<div id="explorer-panel" class="explorer-panel" style="padding:0;overflow:hidden;">
+  <iframe src="omega_explorer.html" style="width:100%;height:82vh;border:none;display:block;"></iframe>
+</div>
+
+<script>
+var expTokensAll = [];
+
+function expTab(name) {
+  document.querySelectorAll('.exp-content').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.exp-tab').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('exp-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'tokens' && expTokensAll.length === 0) loadTokens();
+  if (name === 'ledger') loadLedger();
+}
+
+function loadExplorer() {
+  // Stats
+  fetch(API_URL + '/ledger/stats')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var stats = [
+        {num: d.total_tokens || 400, label: 'Total NFTs'},
+        {num: d.sold || 0, label: 'Sold'},
+        {num: d.unsold || 0, label: 'Available'},
+        {num: '$' + (997600000).toLocaleString(), label: 'Ledger Value'},
+      ];
+      document.getElementById('exp-stats').innerHTML = stats.map(function(s){
+        return '<div class="exp-stat"><span class="exp-stat-num">' + s.num + '</span><span class="exp-stat-label">' + s.label + '</span></div>';
+      }).join('');
+    }).catch(function(){});
+
+  // Wallets
+  fetch(API_URL + '/founding-wallets')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var wallets = d.founding_wallets || [];
+      var html = wallets.map(function(w){
+        var bal = parseFloat(w.balance);
+        var balStr = isNaN(bal) ? w.balance : '$' + bal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        var shortId = w.wallet_id ? w.wallet_id.substring(0,8) + '...' : 'N/A';
+        return '<tr>' +
+          '<td>' + (w.name || 'Unknown') + '</td>' +
+          '<td><span class="exp-hash" title="' + (w.wallet_id||'') + '">' + (w.wallet_id||'N/A') + '</span></td>' +
+          '<td class="exp-bal">' + balStr + '</td>' +
+          '<td>' + (w.nft_count || 0) + ' tokens</td>' +
+          '</tr>';
+      }).join('');
+      document.getElementById('wallets-body').innerHTML = html || '<tr><td colspan="4" style="color:#8B7355;text-align:center;">No data</td></tr>';
+    }).catch(function(e){ document.getElementById('wallets-body').innerHTML = '<tr><td colspan="4" style="color:#8B7355;text-align:center;">Error loading wallets</td></tr>'; });
+}
+
+function loadTokens() {
+  var colls = ['echoes','somnium','paracosm','monolith','le-bal','realism-punks'];
+  var all = [];
+  var done = 0;
+  colls.forEach(function(c){
+    fetch(API_URL + '/collection/' + c)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        (d.tokens || []).forEach(function(t){ t._coll = c; all.push(t); });
+        done++;
+        if (done === colls.length) {
+          expTokensAll = all.sort(function(a,b){ return a.token_id - b.token_id; });
+          renderTokens(expTokensAll);
+        }
+      }).catch(function(){ done++; });
+  });
+}
+
+function renderTokens(tokens) {
+  var html = tokens.map(function(t){
+    var status = t.sale_status || 'unsold';
+    var badgeClass = status === 'sold' ? 'badge-sold' : status === 'founder' ? 'badge-founder' : 'badge-unsold';
+    var minted = t.minted_at ? t.minted_at.substring(0,10) : 'N/A';
+    var fp = t.om109_fingerprint ? t.om109_fingerprint.substring(0,16) + '...' : 'N/A';
+    return '<tr>' +
+      '<td>' + t.token_id + '</td>' +
+      '<td>' + (t.collection || t._coll || '') + '</td>' +
+      '<td>' + (t.title || '') + '</td>' +
+      '<td>' + (t.rarity || '') + '</td>' +
+      '<td><span class="exp-badge ' + badgeClass + '">' + status + '</span></td>' +
+      '<td><span class="exp-hash" title="' + (t.om109_fingerprint||'') + '">' + fp + '</span></td>' +
+      '<td>' + minted + '</td>' +
+      '</tr>';
+  }).join('');
+  document.getElementById('tokens-body').innerHTML = html || '<tr><td colspan="7" style="color:#8B7355;text-align:center;">No tokens</td></tr>';
+}
+
+function filterTokens() {
+  var q = document.getElementById('token-search').value.toLowerCase();
+  if (!q) { renderTokens(expTokensAll); return; }
+  renderTokens(expTokensAll.filter(function(t){
+    return (t.token_id+'').includes(q) ||
+           (t.title||'').toLowerCase().includes(q) ||
+           (t.collection||'').toLowerCase().includes(q) ||
+           (t.rarity||'').toLowerCase().includes(q);
+  }));
+}
+
+function loadLedger() {
+  fetch(API_URL + '/ledger/stats')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var entries = d.recent_entries || d.entries || [];
+      if (!entries.length) {
+        document.getElementById('ledger-body').innerHTML = '<tr><td colspan="8" style="color:#8B7355;text-align:center;padding:30px;">No recent entries — add /ledger/recent endpoint to provenance API for full history</td></tr>';
+        return;
+      }
+      var html = entries.map(function(e){
+        return '<tr>' +
+          '<td>' + (e.created_at||'').substring(0,19) + '</td>' +
+          '<td>' + (e.event_type||'') + '</td>' +
+          '<td>' + (e.collection||'') + '</td>' +
+          '<td>' + (e.token_id||'') + '</td>' +
+          '<td class="exp-hash">' + (e.from_account||'').substring(0,12) + '</td>' +
+          '<td class="exp-hash">' + (e.to_account||'').substring(0,12) + '</td>' +
+          '<td>' + (e.amount_usd ? '$'+parseFloat(e.amount_usd).toFixed(2) : '') + '</td>' +
+          '<td class="exp-hash">' + (e.chain_hash||'').substring(0,16) + '</td>' +
+          '</tr>';
+      }).join('');
+      document.getElementById('ledger-body').innerHTML = html;
+    }).catch(function(){
+      document.getElementById('ledger-body').innerHTML = '<tr><td colspan="8" style="color:#8B7355;text-align:center;">Add /ledger/recent to provenance API</td></tr>';
+    });
+}
+</script>
+
+<script>
+function getResolution(collection) {
+  var res = {
+    'Echoes of Eternity': '665 x 886 px',
+    'Somnium': '768 x 1024 px',
+    'Paracosm': '677 x 870 px',
+    'Monolith': '768 x 768 px'
+  };
+  return res[collection] || 'High Resolution';
+}
+
+function showTab(tab) {
+  var gp = document.getElementById('gallery-panel');
+  var ap = document.getElementById('about-panel');
+  var ep = document.getElementById('explorer-panel');
+  var btns = document.querySelectorAll('.tab-nav .tab-btn');
+  gp.classList.add('hidden');
+  ap.classList.remove('visible');
+  ep.classList.remove('visible');
+  btns[0].classList.remove('active');
+  btns[1].classList.remove('active');
+  if (btns[2]) btns[2].classList.remove('active');
+  if (tab === 'gallery') {
+    gp.classList.remove('hidden');
+    btns[0].classList.add('active');
+  } else if (tab === 'about') {
+    ap.classList.add('visible');
+    btns[1].classList.add('active');
+  } else if (tab === 'explorer') {
+    ep.classList.add('visible');
+    if (btns[2]) btns[2].classList.add('active');
+    loadExplorer();
+  }
+}
+</script>
+
+
+<script>
+var API_URL = 'https://wet-faced-thou-webster.trycloudflare.com';
+// Dynamic API URL — fetch from broker on load
+(async function() {
+  try {
+    var r = await fetch('http://127.0.0.1:8085/current-api');
+    var d = await r.json();
+    if (d.api) API_URL = d.api;
+  } catch(e) {}
+})();
+var COLLECTIONS = ['echoes', 'somnium', 'paracosm', 'monolith', 'le-bal', 'realism-punks'];
+var FOLDER_MAP = {
+  'Echoes of Eternity': { folder: 'echoes_of_eternity', pad: 4 },
+  'Somnium':            { folder: 'somnium',            pad: 4 },
+  'Paracosm':           { folder: 'paracosm',            pad: 4 },
+  'Monolith':           { folder: 'monolith',            pad: 4 },
+  'Le Bal des Rêves':   { folder: 'le_bal_des_reves',   pad: 4 },
+  'Realism Punks':      { folder: 'realism_punks',       pad: 4 }
+};
+var ALL_TOKENS = [];
+var currentFilter = 'all';
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+function debugLog(msg) {
+  var d = document.getElementById('debug');
+  d.textContent += msg + '\n';
+}
+function getImagePath(token) {
+  var info = FOLDER_MAP[token.collection];
+  if (!info) return '';
+  var idStr = String(token.token_id).padStart(info.pad, '0');
+  return '/' + info.folder + '/images/' + idStr + '.png';
+}
+
+async function loadAll() {
+  setStatus('Loading from ' + API_URL + '...');
+  var tokens = [];
+  for (var i = 0; i < COLLECTIONS.length; i++) {
+    var slug = COLLECTIONS[i];
+    try {
+      var r = await fetch(API_URL + '/collection/' + slug);
+      if (!r.ok) { debugLog('HTTP ' + r.status + ' for ' + slug); continue; }
+      var data = await r.json();
+      if (!data.tokens || !data.tokens.length) { debugLog('No tokens for ' + slug); continue; }
+      tokens = tokens.concat(data.tokens);
+    } catch(e) {
+      debugLog('Fetch error (' + slug + '): ' + e.message);
+    }
+  }
+  if (tokens.length === 0) {
+    setStatus('FAILED — no tokens loaded. Check debug log above.');
+    return;
+  }
+  ALL_TOKENS = tokens.sort(function(a,b){ return a.token_id - b.token_id; });
+  setStatus(ALL_TOKENS.length + ' tokens loaded');
+  buildFilters();
+  render();
+}
+
+function buildFilters() {
+  var colls = ['all', 'Echoes of Eternity', 'Somnium', 'Paracosm', 'Monolith', 'Le Bal des Rêves'];
+  var wrap = document.getElementById('filters');
+  wrap.innerHTML = colls.map(function(c) {
+    var label = c === 'all' ? 'All (' + ALL_TOKENS.length + ')' : c;
+    return '<button class="filter-btn' + (c === 'all' ? ' active' : '') + '" data-c="' + c + '">' + label + '</button>';
+  }).join('');
+  wrap.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      currentFilter = btn.dataset.c;
+      wrap.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      render();
+    };
+  });
+}
+
+function openFullscreen(src, title) {
+  var modal = document.getElementById('fullscreen-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'fullscreen-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;';
+    modal.onclick = function(){ modal.style.display='none'; };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<img src="' + src + '" style="max-width:95vw;max-height:90vh;object-fit:contain;">' +
+    '<div style="color:#C9A84C;font-family:\'Cormorant Garamond\',serif;font-size:14px;margin-top:12px;letter-spacing:1px;">' + title + '</div>' +
+    '<div style="color:#8B7355;font-size:10px;margin-top:6px;">Tap anywhere to close</div>';
+  modal.style.display = 'flex';
+}
+
+function render() {
+  var filtered = currentFilter === 'all' ? ALL_TOKENS : ALL_TOKENS.filter(function(t){ return t.collection === currentFilter; });
+  var gallery = document.getElementById('gallery');
+  gallery.innerHTML = filtered.map(function(t) {
+    var img = getImagePath(t);
+    return '<div class="card-wrap" onclick="this.classList.toggle(\'flipped\')" ondblclick="event.stopPropagation(); openFullscreen(\'' + img + '\', \'' + t.title.replace(/'/g,"\\'") + '\')">' +
+      '<div class="card">' +
+        '<div class="face face-front">' +
+          '<img src="' + img + '" alt="' + t.title + '" loading="lazy" onerror="this.parentElement.style.background=\'#0D0B0E\'; this.style.display=\'none\';">' +
+          '<div class="rarity-tag">' + (t.rarity||'?') + '</div>' +
+          (t.sale_status==='sold'?'<div class="sold-overlay"><div class="sold-badge">Sold</div></div>':'') +
+          '<div class="card-caption">#' + t.token_id + ' — ' + t.title + '</div>' +
+        '</div>' +
+        '<div class="face face-back">' +
+          '<div style="text-align:center;border-bottom:1px solid #C9A84C;margin-bottom:8px;padding-bottom:6px;">' +
+            '<div style="font-family:\'Cormorant Garamond\',serif;font-size:11px;letter-spacing:2px;color:#C9A84C;text-transform:uppercase;">Certificate of Authenticity</div>' +
+            '<div style="font-size:8px;color:#8B7355;margin-top:2px;font-style:italic;">Omega Art Studio · Thomas Lee Harvey</div>' +
+          '</div>' +
+          '<div class="back-row"><div class="back-label">Title</div><div class="back-value">' + t.title + '</div></div>' +
+          '<div class="back-row"><div class="back-label">Collection</div><div class="back-value">' + t.collection + '</div></div>' +
+          '<div class="back-row"><div class="back-label">Resolution</div><div class="back-value">' + getResolution(t.collection) + '</div></div>' +
+          '<div class="back-row"><div class="back-label">Rarity</div><div class="back-value">' + t.rarity + '</div></div>' +
+          '<div class="back-row"><div class="back-label">SHA-256</div><div class="back-value">' + (t.image_sha256||'').substring(0,32) + '...</div></div>' +
+          '<div class="back-row"><div class="back-label">OM109</div><div class="back-value">' + (t.om109_fingerprint||'').substring(0,32) + '...</div></div>' +
+          '<div class="back-row"><div class="back-label">Chain Hash</div><div class="back-value">' + (t.chain_hash||'').substring(0,32) + '...</div></div>' +
+          '<div style="margin-top:10px;border-top:1px solid #3a2e1e;padding-top:10px;">' +
+            (t.sale_status === 'sold' ?
+              '<div style="text-align:center;background:#1C1612;border:1px solid #8B7355;color:#8B7355;padding:8px;font-size:10px;letter-spacing:2px;font-family:\'JetBrains Mono\',monospace;">SOLD</div>'
+              : t.is_founder_linked ?
+              '<div style="text-align:center;color:#8B7355;font-size:9px;font-style:italic;">Founder Held · Not For Sale</div>'
+              : t.stripe_payment_link ?
+              '<button onclick="event.stopPropagation();addToCart(' + t.token_id + ',\''+t.collection+'\',\''+t.title+'\',\''+t.rarity+'\',\''+t.stripe_payment_link+'\')" style="display:block;width:100%;background:#C9A84C;color:#0D0B0E;padding:8px;font-size:10px;letter-spacing:2px;font-weight:bold;text-transform:uppercase;border:none;cursor:pointer;font-family:\'JetBrains Mono\',monospace;">Add to Cart · ' + ({"Impossible Diamond":"$2,500","Black Diamond":"$500","Super Rare":"$150","Rare":"$75","Medium":"$35","Common":"$15"}[t.rarity]||"$15") + '</button>'
+              : '<div style="text-align:center;color:#8B7355;font-size:9px;">Not available</div>'
+            ) +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+loadAll();
+
+const PRICES={"Impossible Diamond":2500,"Black Diamond":500,"Super Rare":150,"Rare":75,"Medium":35,"Common":15};
+let cart=JSON.parse(localStorage.getItem('omega_cart')||'[]');
+
+function saveCart(){localStorage.setItem('omega_cart',JSON.stringify(cart));renderCart();}
+
+function addToCart(tokenId,collection,title,rarity,stripeLink){
+  const key=collection+'_'+tokenId;
+  if(cart.find(i=>i.key===key)){toggleCart();return;}
+  cart.push({key,tokenId,collection,title,rarity,stripeLink});
+  saveCart();
+  toggleCart();
+}
+
+function removeFromCart(key){cart=cart.filter(i=>i.key!==key);saveCart();}
+
+function toggleCart(){
+  document.getElementById('cart-drawer').classList.toggle('open');
+  document.getElementById('cart-overlay').classList.toggle('open');
+}
+
+function renderCart(){
+  const badge=document.getElementById('cart-badge');
+  const items=document.getElementById('cart-items');
+  const footer=document.getElementById('cart-footer');
+  const total=document.getElementById('cart-total');
+  badge.style.display=cart.length?'flex':'none';
+  badge.textContent=cart.length;
+  if(!cart.length){items.innerHTML='<div class="cart-empty">Your collection is empty</div>';footer.style.display='none';return;}
+  let sum=0;
+  items.innerHTML=cart.map(item=>{
+    const p=PRICES[item.rarity]||15;sum+=p;
+    return '<div class="cart-item"><div class="cart-item-info"><div class="cart-item-title">'+item.title+'</div><div class="cart-item-sub">'+item.collection+' #'+String(item.tokenId).padStart(4,'0')+' · '+item.rarity+'</div></div><div class="cart-item-price">$'+p.toLocaleString()+'</div><button class="cart-remove" onclick="removeFromCart(\''+item.key+'\')">✕</button></div>';
+  }).join('');
+  total.textContent='$'+sum.toLocaleString();
+  footer.style.display='block';
+}
+
+function checkout(){
+  if(!cart.length)return;
+  cart.forEach((item,i)=>setTimeout(()=>window.open(item.stripeLink,'_blank'),i*500));
+}
+
+renderCart();
+
+</script>
+
+<div id="cart-icon" onclick="toggleCart()">🛒<span id="cart-badge" style="display:none;">0</span></div>
+<div id="cart-overlay" onclick="toggleCart()"></div>
+<div id="cart-drawer">
+  <div class="cart-header">
+    <div class="cart-title">Your Collection</div>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div id="cart-items"><div class="cart-empty">Your collection is empty</div></div>
+  <div id="cart-footer" style="display:none;">
+    <div class="cart-total-row">
+      <div class="cart-total-label">Total</div>
+      <div class="cart-total-amt" id="cart-total">$0</div>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Checkout →</button>
+  </div>
+</div>
+</body>
+</html>
